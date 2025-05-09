@@ -1,5 +1,10 @@
-
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from 'react';
 import { UserRole } from '@/lib/types';
 import { mockDataService, switchUserRole } from '@/lib/services/mockDataService';
 import { useToast } from '@/hooks/use-toast';
@@ -23,13 +28,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  // Function to refresh user role (for consistency with original)
   const refreshUserRole = async () => {
     if (!user) return;
     setUserRole(user.role);
   };
 
-  // Function to switch roles for demo purposes
   const switchRole = (role: UserRole) => {
     const newUser = switchUserRole(role);
     setUser(newUser);
@@ -40,21 +43,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const setupAuth = async () => {
       try {
-        // Check if there's a preferred role stored in localStorage
         const savedRole = localStorage.getItem('mockUserRole') as UserRole | null;
-        
-        // Get mock current user, with the saved role if available
-        const currentUser = savedRole 
-          ? switchUserRole(savedRole) 
+        const currentUser = savedRole
+          ? switchUserRole(savedRole)
           : mockDataService.getCurrentUser();
-        
+
         if (currentUser) {
           setUser(currentUser);
           setSession({ user: currentUser });
           setUserRole(currentUser.role);
-          
+
           toast({
-            title: "Mock Authentication",
+            title: 'Mock Authentication',
             description: `Logged in as ${currentUser.name} (${currentUser.role})`,
           });
         }
@@ -74,23 +74,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setSession(null);
     setUserRole(null);
     localStorage.removeItem('mockUserRole');
-    
+
     toast({
-      title: "Logged out",
-      description: "You have been logged out of the system.",
+      title: 'Logged out',
+      description: 'You have been logged out of the system.',
     });
+
+    // 🚫 Do NOT use navigate here — let caller handle redirection
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      session, 
-      userRole, 
-      isLoading, 
-      signOut,
-      refreshUserRole,
-      switchRole
-    }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        session,
+        userRole,
+        isLoading,
+        signOut,
+        refreshUserRole,
+        switchRole,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

@@ -1,12 +1,12 @@
-import { useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
-import { useNavigate } from 'react-router-dom';
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 export default function Signup() {
-  const [email, setEmail] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [password, setPassword] = useState('');
-  const [role, setRole] = useState('mentee');
+  const [email, setEmail] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState("mentee");
   const navigate = useNavigate();
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -24,23 +24,26 @@ export default function Signup() {
 
     const user = data.user;
     if (user) {
-      await supabase.from('users').insert([
+      const { error: insertError } = await supabase.from("profiles").insert([
         {
-          id: user.id,
-          email,
-          full_name: fullName,
+          id: user.id, // ✅ Must match auth.users UUID
+          name: fullName,
           role,
         },
       ]);
-    }
 
-    alert('Signup successful! Redirecting...');
-    navigate('/login');
+      if (insertError) {
+        alert("Signup failed: " + insertError.message);
+        return;
+      }
+
+      alert("Signup successful! Redirecting to login...");
+      navigate("/auth");
+    }
   };
 
   return (
     <div className="min-h-screen flex">
-      {/* Left Section (branding) */}
       <div className="w-1/2 bg-green-600 text-white flex items-center justify-center p-10">
         <div className="text-center">
           <h1 className="text-4xl font-bold">Join Mentor Project Hub</h1>
@@ -48,7 +51,6 @@ export default function Signup() {
         </div>
       </div>
 
-      {/* Right Section (form) */}
       <div className="w-1/2 flex items-center justify-center p-10 bg-gray-50">
         <form
           onSubmit={handleSignup}
@@ -59,24 +61,27 @@ export default function Signup() {
           <input
             type="text"
             placeholder="Full Name"
-            className="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+            value={fullName}
             onChange={(e) => setFullName(e.target.value)}
+            className="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
             required
           />
 
           <input
             type="email"
             placeholder="Email"
-            className="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+            value={email}
             onChange={(e) => setEmail(e.target.value)}
+            className="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
             required
           />
 
           <input
             type="password"
             placeholder="Password"
-            className="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+            value={password}
             onChange={(e) => setPassword(e.target.value)}
+            className="w-full border border-gray-300 p-2 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
             required
           />
 
@@ -98,8 +103,8 @@ export default function Signup() {
           </button>
 
           <p className="text-sm text-center text-gray-600">
-            Already have an account?{' '}
-            <a href="/login" className="text-green-600 hover:underline font-medium">
+            Already have an account?{" "}
+            <a href="/auth" className="text-green-600 hover:underline font-medium">
               Log In
             </a>
           </p>
